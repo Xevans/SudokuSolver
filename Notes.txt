@@ -1,0 +1,36 @@
+Goal:
+Design a program that can generate a sudoku board with some pre-filled entries and show the steps to solving the generated board.
+
+
+Sudoku class requirements:
+
+Initialize Board: create a sudoku board with no entries
+	Board will be 9x9 and may be subdivided into 9 3x3 sectors
+
+-----------------------------------------------
+Prefill board: inject each sector with some values the comply to sudoku rules
+
+-----------------------------------------
+Print Board: Display board and its entries.
+
+------------------------------------------
+
+
+[Sudoku Solver >> inherits >> Sudoku class]
+
+Solver requirements:
+
+------------------------------------------
+
+Solve: a recursive or iterative (indefinite) function that calls the following solving operations until n items have been added to the board (board is full).    
+
+insert entry: insert an entry that complies with rules (stack memory)
+
+remove entry: remove a previously inserted entry (stack memory)
+
+show step: print dialogue explaining move followed by calling the print board function accessed in parent.
+
+
+
+
+

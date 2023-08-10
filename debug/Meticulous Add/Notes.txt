@@ -1,0 +1,24 @@
+Goal: Validate each potential new row entery, column by column.
+
+Process: 
+Given a 2D matrix representing the current board. A proposal array that will contain each approved number to be added to the array. A temporary array use to narrow the available entries. 
+From left to right, start from the top of a column and 'mark off' each number in the temporary array that match any number read in the current column. 
+When the end of a column is reached, append the first 'non-marked' number to the proposal array in the corresponding position of the current column. 
+Repreat until each column has been visited.
+
+
+Cause of Failure: 
+The second row succeded however, the third row encountered a scenario where it could apply numbers to the corresponding slots while following the rules of sudoku until it reached the last column.
+Although all other number could be added, 9 could not be fitted and thus it was not added.
+
+
+Best Case for this Algorithm:
+The fewer rows filled in, the more likely the program will fail or result in expensive time.
+
+
+Worst case for this algorithm:
+The more rows that are filled in, the more likely the program will succeed with les expensive time.
+
+
+Possible contingencies:
+
