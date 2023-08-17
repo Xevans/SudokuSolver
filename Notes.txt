@@ -128,3 +128,37 @@ Task: test an 'entry' and run validate that calls both validation functions and 
 Task: Work on generation implementation using algorithm above.
 
 
+August 17 - Backtracking algorithm
+
+
+Recap:
+
+- Choose a random unoccupied cell on the sudoku grid.
+- write a random single digit (1-9) entry to the chosen spot.
+- Do validation check; does the board break the rules (repeating digit(s) in row, col, subset).
+- If the board breaks the rules, remove the entry, then try a different number (not yet chosen in this loop) at the same spot.
+- If the board does not break rules (passes validation). Repeat the algorithm until n spots are occupied.
+
+
+Task: play with C++ random library. Want a random algorithm that is truly random. (complete)
+
+(1.) With random number generator. determine a cell from 1 to 81 (inclusive) for insertion.
+
+(2.) get coordinates of cell.
+
+(3.) from an array {1,2,3,4,5,6,7,8,9}, go in order--choosing a number then calling validate with the entry and the coordinates.
+
+(4.) if a false value is returned, go to the next number. If a true value is returned, write that number into the cell.
+
+(5.) Loop.
+
+
+Update: generate function is arbitrarily inserting valid entries. However it seems that the back tracking algorithm is complete.
+
+Ran the function at 10, 20, 50, and 80 iters in driver code to simulate parent loop to be added in generate.
+Helped find and debug issue where subset validation did not check the last row of the box-search(small syntax issue).
+
+Attempted to loop until 81 cells were filled.
+Program ran into an indefinite loop when an unsolvable board was encountered.
+
+Task: modify algorithm to remove entries when board is unsolvable. Must first determine when a board is unsolvable.
