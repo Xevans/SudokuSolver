@@ -1,0 +1,51 @@
+bool Sudoku::subset_validate(int row, int col, int entry) {
+	// determine center point of sector
+	int reference_row = 0;
+	int reference_col = 0;
+
+	// box neighbor check for reference point coordinates
+	for (int i = row - 1; i < row + 1; i++) {
+		for (int j = col - 1; j < col + 1; j++) {
+			for (int k = 0; k < grid; k++) {
+				if (board[i][j]->value == reference_points[k]) {
+					reference_row = i;
+					reference_col = j;
+				}
+			}
+		}
+	}
+
+	// box neighbor check for identical entry to current arbitrary entry.
+	for (int i = reference_row - 1; i < reference_row + 1; i++) {
+		for (int j = reference_col - 1; j < reference_col + 1; j++) {
+			
+			// if the value of the the current cell is the same as the entry AND the coordinates are NOT the same
+			if (board[i][j]->value == entry && i != row && j != col) {
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+bool Sudoku::cross_validate(int row, int col, int entry) {
+	// check every cell in the same row as the entry
+	// if an entry is the same as the current arbitrary entry and the coordiantes are not the same, return false.
+
+	for (int j = 0; j < grid; j++) {
+		if (board[row, j]->value == entry && j != col) {
+			return false;
+		}
+	}
+
+	// check every cell in the same col as the entry
+	// if an entry is the same as the current arbitrary entry and the coordiantes are not the same, return false.
+	for (int i = 0; i < grid; i++) {
+		if (board[i, col]->value == entry && i != row) {
+			return false;
+		}
+	}
+
+	return true;
+}

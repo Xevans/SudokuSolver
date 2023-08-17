@@ -4,294 +4,199 @@
 #include <ctime>
 using namespace std;
 
-#define MAX 81
-# define grid 9
+#define MAX 81 // total Cells that exist on a 9x9 Sudoku board
+# define grid 9 // number of cells in a subset of a grid
 
 
-struct subgrid {
-	int subsection[3][3];
+// structure for subgrid object. [3x3 grid with a sector number to indicate its relative position to other subgrids.]
+struct cell {
+	int cell_number = 0;
+	int value = 0;
 	int sector = 0;
+	//cell* next_cell;
 };
+
+
+
 
 class Sudoku {
 public:
-	int inserted_items = 0;
+	// Attributes
+	int inserted_items = 0; // count of currently uccupied cells on the grid. 
+	cell* board[9][9]; // 3 by 3 of 3 by 3s
+	//vector<cell*> board;
+	int reference_points[9]{11, 14, 17, 38, 41, 44, 65, 68, 71}; // list of every subsection's central identifier
 
-	// Stack memory for all entries
-	vector<int> insertion_stack;
-	vector<subgrid> gridList;
-	
-
-	// Initialization
+	// Opertations
 	Sudoku();
 	~Sudoku();
 
 	void initialize(); // initialize a list of 9 2D matricies with each cell's values initialized.
-	void preFill(); // Arbitrarilly choose cells and insert entries in each sector but one.
-	void printBoard(); // Represent the board in ASCII symbols.
+	void generate(); // Randomly choose a cell and insert a single digit.
+	bool validate(); // verify that the board follows the rules of sudoku. Two step process.
+	bool subset_validate(int, int, int); // checks if the current entry already exists in that sector.
+	bool cross_validate(int, int, int); // Checks if the current entry already exists in the row and column it was placed in.
+	
 
+
+	// printing
+	void printBoard(); // print a visual representation of the board
 
 	// Alloc Memory Clean Up
 	void deleteBoard(); // delete all cells in the board.
-	void emptyStack(); // empty stack elements.
 
-	int * shuffle();  // shuffle a fixed size array (50 swaps).
-
-	bool crossExamine(int arr[9], int sudoku_grid[9][9], int row);
-
-	int* meticAdd(int sudoku_grid[9][9], int row); // meticulous adding of individual entries
+	// Utility ops
+	int* shuffle();  // shuffle a fixed size array (50 swaps).
 };
 
 
 Sudoku::Sudoku() {
 	cout << "Begin" << endl;
+	initialize();
 }
 
 Sudoku::~Sudoku() {
 	cout << "End" << endl;
+	//destroy()
 }
 
+
+
 void Sudoku::initialize() {
+	// initialize each index in sudokuGrid with a cell pointer.
+	int counter = 1;
+
 	for (int i = 0; i < grid; i++) {
-		subgrid temp;
-		temp.sector = i;
-
-		for (int j = 0; j < 3; j++) {
-			for (int k = 0; k < 3; k++) {
-				temp.subsection[j][k] = 0;
-			}
+		for (int j = 0; j < grid; j++) {
+			cell* temp = new cell;
+			temp->cell_number = counter;
+			temp->value = 0;
+			board[i][j] = temp;
+			counter++;
 		}
-
-		gridList.push_back(temp);
 	}
+
+	for (int i = 0; i < grid; i++) {
+		for (int j = 0; j < grid; j++) {
+			cout << board[i][j]->value << endl;
+		}
+	}
+
+	// initialize reference points
+
+	cout << "Reference points" << endl;
+	for (int i = 0; i < grid; i++) {
+		cout << "[" << reference_points[i] << "]" << endl;
+	}
+}
+
+
+
+void Sudoku::generate() {
+
+}
+
+
+
+bool Sudoku::validate() {
+	//Normally would take row and column numbers as arguments
+	int row = 2;
+	int column = 0;
+	int entry = 1;
+
+	board[1][1]->value = 3;
+
+
+
+	// call subset validation that returns true or false, store the value
+	bool subset_check = subset_validate(row, column, entry);
+
+	// call cross validation that returns true or false, store the value
+	bool cross_check = cross_validate(row, column, entry);
+
+	cout << "subset-check status: " << subset_check << endl;
+	cout << "cross-check status:" << cross_check << endl;
+
+
+	// if subset_check == true AND cross_check == true, return true otherwise return false
+	if (subset_check == true && cross_check == true) {
+		return true; // board is valid!
+	}
+	
+	return false;
 }
 
 void Sudoku::printBoard() {
-	
-	// loop the vector
-	for (int i = 0; i < gridList.size(); i++) {
-
-		cout << "Section: " << i + 1 << endl;
-
-		// print the grid stored in the current vector element.
-		for (int j = 0; j < 3; j++) {
-			for (int k = 0; k < 3; k++) {
-				cout << gridList[i].subsection[j][k];
-			}
-			cout << endl;
-		}
-
-		cout << endl;
-	}
 }
 
+bool Sudoku::subset_validate(int row, int col, int entry) {
 
-void Sudoku::preFill() {
+	for (int i = 0; i < grid; i++) {
+		for (int j = 0; j < grid; j++) {
+			cout << board[i][j]->value << endl;
+		}
+	}
 
-	// create a 2d matrix representative of the entire board. (Will be fore generation and mapping purposes only)
+	// determine center point of sector
 
-	int sudoku_grid[9][9];
-	int * arr;
-	bool grid_complete = false;
-	int row = 0;
-	bool valid = false;
+	// center point's coordinates
+	int reference_row = 0;
+	int reference_col = 0;
 
-	// per row:
-	// if on the first row, shuffle the temp array and append it to the first row then move to next.
-	// shuffle temp array. If none of its elements are column repeats, append it to the current row being worked on then move to next row until all 9 rows are complete. otherwise, repeate this step
-	// given the nature of the array, there is no need to worry about row repeats.
-
-	
-	while (grid_complete == false) {
-
-		//shuffle
-		// validate
-		// if validation fail, shuffle again
-		// else continue to next row and shuffle
-
-		if (row == 0) { // initial row
-			arr = shuffle();
-			for (int i = 0; i < 9; i++) {
-				sudoku_grid[row][i] = arr[i];
-			}
-			row++;
+	// box neighbor check for reference point coordinates
+	for (int i = row - 1; i <= row + 1; i++) {
+		//if the current row is out of bounds, skip current iteration
+		if (i < 0 || i > 8) {
 			continue;
 		}
 
-
-		arr = meticAdd(sudoku_grid, row);
-
-		// debug
-
-		cout << "Current Grid:" << endl;
-		for (int i = 0; i < 9; i++) {
-			for (int j = 0; j < 9; j++) {
-				if (sudoku_grid[i][j] != NULL) {
-					cout << sudoku_grid[i][j] << " ";
-				}
-			}
-			cout << endl;
-		}
-
-		cout << "Meticulous Addition:" << endl;
-		for (int i = 0; i < 9; i++) {
-			cout << arr[i] << " ";
-		}
-
-		cout << endl;
-
-		// validate
-		valid = crossExamine(arr, sudoku_grid, row);
-
-		if (valid == true) { // if valid
-			// add the new row
-			for (int i = 0; i < 9; i++) {
-				sudoku_grid[row][i] = arr[i];
-			}
-
-
-			cout << "Grid after adding valid row:" << endl;
-			for (int i = 0; i < 9; i++) {
-				for (int j = 0; j < 9; j++) {
-					if (sudoku_grid[i][j] != NULL) {
-						cout << sudoku_grid[i][j] << " ";
-					}
-				}
-				cout << endl;
-			}
-
-			// increment row
-			row++;
-
-			// if row is last row grid_complete = true
-			if (row == 9) {
-				grid_complete = true;
-			}
-			else {
-				//continue
+		for (int j = col - 1; j <= col + 1; j++) {
+			//if the current col is out of bounds, skip current iteration
+			if (j < 0 || j > 8) {
 				continue;
 			}
-			
-		}
-		else { // if not valid
-			continue;
-		}
-		
-	}
 
-	for (int i = 0; i < 9; i++) {
-		for (int j = 0; j < 9; j++) {
-			cout << sudoku_grid[i][j] << " ";
-		}
-		cout << endl;
-	}
-
-}
-
-
-
-int* Sudoku::meticAdd(int sudoku_grid[9][9], int row) {
-	
-	int arr[9] = {1,2,3,4,5,6,7,8,9};
-	int agg_arr[9] = { 1,2,3,4,5,6,7,8,9 };
-	int append_arr [9];
-
-
-	for (int i = 0; i < 9; i++) {
-		for (int j = 0; j < row; j++) {
-			for (int k = 0; k < 9; k++) {
-				
-				if (sudoku_grid[j][i] == agg_arr[k]) {
-					agg_arr[k] = 0;
-					break;
+			for (int k = 0; k < grid; k++) {
+				if (board[i][j]->cell_number == reference_points[k]) {
+					reference_row = i;
+					reference_col = j;
 				}
 			}
 		}
-
-		for (int q = 0; q < 9; q++) {
-			if (agg_arr[q] != 0) {
-				append_arr[i] = agg_arr[q]; // choose non zero value
-				arr[q] = 0; // mark array of used values
-				break;
-			}
-		}
-
-		// reset agg but mark 0s in the spots arr have marked.
-		for (int q = 0; q < 9; q++) {
-			if (arr[q] == 0) {
-				agg_arr[q] = 0;
-			}
-			else {
-				agg_arr[q] = q + 1;
-			}
-		}
-
 	}
 
-	int* pointerArr = new int[9];
+	// box neighbor check for identical entry to current arbitrary entry.
+	for (int i = reference_row - 1; i < reference_row + 1; i++) {
+		for (int j = reference_col - 1; j < reference_col + 1; j++) {
 
-	for (int i = 0; i < 9; i++) {
-		pointerArr[i] = append_arr[i];
-	}
-
-	return pointerArr;
-
-}
-
-bool Sudoku::crossExamine(int arr[9], int sudoku_grid[9][9], int row) {
-	// validate - cross examine current random generation vs each row (row 0 to last completed row)
-	for (int i = 0; i < row; i++) {
-		for (int j = 0; j < 9; j++) {
-			if (arr[j] == sudoku_grid[i][j]) {
-				// there is a column that already has the number. regenerate.
+			// if the value of the the current cell is the same as the entry AND the coordinates are NOT the same
+			if (board[i][j]->value == entry && i != row && j != col) {
 				return false;
 			}
 		}
 	}
 
-	/*
-	for (int i = 0; i < 9; i++) {
-		for (int j = 0; j < 9; j++) {
-			cout << sudoku_grid[i][j] << " ";
-		}
-		cout << endl;
-	}*/
-
 	return true;
 }
 
-int * Sudoku::shuffle() {
-	bool lock = true;
-	int temp_size = 9;
-	int arr[9] = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 
-	for (int i = 0; i < 50; i++) {
-		// shuffle temporary array (consider making its own function that accepts and returns an array by reference)
-		int pick_1;
-		int pick_2;
+bool Sudoku::cross_validate(int row, int col, int entry) {
+	// check every cell in the same row as the entry
+	// if an entry is the same as the current arbitrary entry and the coordiantes are not the same, return false.
 
-		pick_1 = (rand() % temp_size);// randomly choose an index
-
-		while (lock == true) {
-			pick_2 = (rand() % temp_size);
-
-			if (pick_2 != pick_1) {
-				lock = false;
-			}
+	for (int j = 0; j < grid; j++) {
+		if (board[row][j]->value == entry && j != col) {
+			return false;
 		}
-
-		lock = true;
-
-		int temp_item = arr[pick_2];
-		arr[pick_2] = arr[pick_1];
-		arr[pick_1] = temp_item;
 	}
 
-	int* pointerArr = new int[9];
-
-	for (int i = 0; i < 9; i++) {
-		pointerArr[i] = arr[i];
+	// check every cell in the same col as the entry
+	// if an entry is the same as the current arbitrary entry and the coordiantes are not the same, return false.
+	for (int i = 0; i < grid; i++) {
+		if (board[i][col]->value == entry && i != row) {
+			return false;
+		}
 	}
 
-	return pointerArr;
+	return true;
 }

@@ -1,0 +1,86 @@
+// generates a sudoku board and pre fills extries in each sector
+#include <iostream>
+#include <vector>
+#include <ctime>
+using namespace std;
+
+#define MAX 81 // total Cells that exist on a 9x9 Sudoku board
+# define grid 9 // number of cells in a subset of a grid
+
+
+// structure for subgrid object. [3x3 grid with a sector number to indicate its relative position to other subgrids.]
+struct cell {
+	int value = 0;
+	int sector = 0;
+};
+
+struct subsection {
+	cell subgrid[3][3]; // 2D array of cells
+	int sector = 0;
+
+};
+
+struct sudokuGrid {
+	subsection board[3][3] // 3 by 3 of 3 by 3s
+};
+
+class Sudoku {
+public:
+	// Attributes
+	int inserted_items = 0; // count of currently uccupied cells on the grid. 
+	
+
+	// Opertations
+	Sudoku();
+	~Sudoku();
+
+	void initialize(); // initialize a list of 9 2D matricies with each cell's values initialized.
+	void generate(); // Randomly choose a cell and insert a single digit
+	bool validate(int arr[9], int sudoku_grid[9][9], int row); // verify that the board follows the rules of sudoku
+	void printBoard(); // print a visual representation of the board
+
+	// Alloc Memory Clean Up
+	void deleteBoard(); // delete all cells in the board.
+
+	// Utility ops
+	int* shuffle();  // shuffle a fixed size array (50 swaps).
+};
+
+
+Sudoku::Sudoku() {
+	cout << "Begin" << endl;
+	initialize();
+}
+
+Sudoku::~Sudoku() {
+	cout << "End" << endl;
+	//destroy()
+}
+
+void Sudoku::initialize() {
+	
+}
+
+
+void Sudoku::generate() {
+
+
+}
+
+void Sudoku::printBoard() {
+
+	// loop the vector
+	for (int i = 0; i < gridList.size(); i++) {
+
+		cout << "Section: " << i + 1 << endl;
+
+		// print the grid stored in the current vector element.
+		for (int j = 0; j < 3; j++) {
+			for (int k = 0; k < 3; k++) {
+				cout << gridList[i].subsection[j][k];
+			}
+			cout << endl;
+		}
+		cout << endl;
+	}
+}

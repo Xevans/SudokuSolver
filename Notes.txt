@@ -31,6 +31,100 @@ remove entry: remove a previously inserted entry (stack memory)
 show step: print dialogue explaining move followed by calling the print board function accessed in parent.
 
 
+August 10 - Generation Algorithm - Decision Problem
 
+- Choose a random unoccupied cell on the sudoku grid.
+- write a random single digit (1-9) entry to the chosen spot.
+- Do validation check; does the board break the rules (repeating digit(s) in row, col, subset).
+- If the board breaks the rules, remove the entry, then try a different number (not yet chosen in this loop) at the same spot.
+- If the board does not break rules. Repeat the algorithm until n spots are occupied.
+
+August 14 - Sector association
+
+An array called referencePoints will be created on borard creation. It contains a list of structures that contain two attributes. A row attribute and a column attribute.
+each index represents the sector number - 1.
+
+referencePoints = [row = 1; col = 1], [row = 1; col = 4], [row = 1; col = 7], 
+		  [row = 4; col = 1], [row = 4; col = 4], [row = 4; col = 7],
+		  [row = 7; col = 1], [row = 7; col = 4], [row = 7; col = 7]
+
+Approaches to determine the sector of any chosen index for an entry:
+(1)Could number the board during initialization and create an assignment using the cell numbers.
+(2)Could do a neighbor search to find the entry's subsection center.
+
+In approach 1, tagging every cell with numbers would require a condition that checks the cell number against a list to determine its assigned sector. Although this would only need to happen once for each cell (81 in all) it would requre more computation time. 
+
+In approach 2 there is no need to determine the sector. The program will check the neighbors and compare each against the list of reference points. Since every entry can only have 1 valid neighbor that is a 'center point' this is a valid approach.
+
+I will be using approach 2. 
+
+
+Board Validation...
+
+There will be two types of validation to occur on every entry.
+
+-- subset validation
+Checks to see if the current entry already exists in that sector.
+
+Approach: 
+Have indexes of the central cells of every sector commited to memory.
+e.g. if sector 1, start at [1,1]. Then check all neighbors (including self when applicable).
+
+Visual example. Made an entry within sector X. Sector X's central cell is located at [j,k] accourding to the array of central cells.
+
+Then just need to check cells (ignore current index when entry of current iteration was made). 
+[j-1,k-1], [j-1, k], [j-1, k+1]
+[j,k-1],   [j,k]   , [j, k+1]
+[j+1, k-1], [j+1, k], [j+1, k+1]
+
+Would it be quicker and simpler to keep a list of added numbers for a given sector? It would update per entry. The program will only need to check for occurence in the list (linear search).
+Above approach requires anywhere from 0 to 9 searches. List approach would be anywhere from 0 to 9 searches. Entirely depends on the entries. 
+
+Currently I do not see a computation time advantage. The former approach has a memory advantage however, so I will be implementing that.   
+
+
+-- cross validation
+Checks to see if the current entry already exists in the column/row it was placed in.
+
+Approach:
+given index [j][k]
+check all values from [j][0] to [j][9]. This is all entries in the same row.
+check all values from [0][k] to [9][k]. This is all entries in the same col.
+
+It's a straightorward linear search.
+
+
+August 15
+
+List of reference points created.
+Next goal is to implement validation algorithms, test them, implement back tracking algorithm, test it. Integrate with validation algorithms. 
+
+validate will need to take in a reference point.
+
+Create a function called get reference would make sense.
+
+Update to finding the center point of secotor. Each cell will require a unique identifier (will just number them in order left to right, row by row up to 81). The when the neighbor search occurs, we will select the neighbor with a matching identifier in the list.
+
+Previorsly the approach had no way of identifying cells except for by row and column. This will reduce the number of checks needed.
+
+
+Current task:
+Tracing then unit testing for subset and cross validation...
+Once done, push to github.
+
+August 16
+
+Encountered an error while working on subset validation.
+The box search uses a given coordinate and visits all matrix cells from row-1,col-1 to row+1, col+1.
+One test case involved validating an entry that was made at the edge of the board [0,0].
+This caused a segmentation/memory access error.
+
+Task: devise a way to check if the 'box' is partially out of bounds and integrate it into the algorthm for box searching. (completed)
+
+Task: test cross validation (completed)
+
+Task: test an 'entry' and run validate that calls both validation functions and determines overal validity. Both must return true for current entry to be valid(true). (complete)
+
+Task: Work on generation implementation using algorithm above.
 
 
