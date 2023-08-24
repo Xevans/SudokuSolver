@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <random>
+#include <fstream>
 using namespace std;
 
 #define MAX 81 // total Cells that exist on a 9x9 Sudoku board
@@ -24,18 +25,21 @@ class Sudoku {
 public:
 	// Attributes
 	int inserted_items = 0; // count of currently uccupied cells on the grid. 
-	cell* board[9][9]; // 3 by 3 of 3 by 3s
-	//vector<cell*> board;
-	int reference_points[9]{11, 14, 17, 38, 41, 44, 65, 68, 71}; // list of every subsection's central identifier
 
-	vector<int> occupied_cells;
+	// lists
+	cell* board[9][9]; // 3 by 3 of 3 by 3s
+	int reference_points[9]{11, 14, 17, 38, 41, 44, 65, 68, 71}; // list of every subsection's central identifier
+	vector<int> chosen_list; // list of cell numbers (IDs)
+
+	ofstream file;
 
 	// Opertations
 	Sudoku();
 	~Sudoku();
 
-	void initialize(); // initialize a list of 9 2D matricies with each cell's values initialized.
+	void initialize(); // initialize a 2D matrix with each sudoku cell's values initialized.
 	void generate(); // Randomly choose a cell and insert a single digit.
+	void generate2(); // go in order inserting a random value from 1 to 9;
 	bool validate(int, int, int); // verify that the board follows the rules of sudoku. Two step process.
 	bool subset_validate(int, int, int); // checks if the current entry already exists in that sector.
 	bool cross_validate(int, int, int); // Checks if the current entry already exists in the row and column it was placed in.
@@ -44,28 +48,32 @@ public:
 
 	// printing
 	void printBoard(); // print a visual representation of the board
+	void printDebug(ofstream&);
 
 	// Alloc Memory Clean Up
-	void deleteBoard(); // delete all cells in the board.
+	void destroyBoard(); // delete all cells in the board.
 
-	// Utility ops
-	int* shuffle();  // shuffle a fixed size array (50 swaps).
 };
 
 
 Sudoku::Sudoku() {
 	cout << "Begin" << endl;
+	file.open("filename.txt");
 	initialize();
 }
 
 Sudoku::~Sudoku() {
 	cout << "End" << endl;
-	//destroy()
+	destroyBoard();
+	file.close();
 }
 
 
 
 void Sudoku::initialize() {
+
+	cout << "Building new board" << endl;
+
 	// initialize each index in sudokuGrid with a cell pointer.
 	int counter = 1;
 
@@ -96,14 +104,15 @@ void Sudoku::initialize() {
 }
 
 
-
 void Sudoku::generate() {
 	
 	bool existing = false;
 	bool valid = false;
+	bool failed = false;
 	int row = -1;
 	int col = -1;
 	int entry = -1;
+	//bool already_chosen = false;
 
 	random_device rd;
 	mt19937 gen(rd());
@@ -111,9 +120,12 @@ void Sudoku::generate() {
 
 	// !!!(parent loop)!!! loop until inserted_items == 81 // remember to modify inserted items when debugging with existing values.
 
+	// do not proceed until a cell that have never been filled is chosen.
+
 	int random_number = dis(gen);
 
-	// if random number does not exist in array of occupied_cells (a list of cell numbers)
+
+	// get coordinates of the random choice via cell its ID
 	for (int i = 0; i < grid; i++) {
 		for (int j = 0; j < grid; j++) {
 			if (board[i][j]->cell_number == random_number) {
@@ -123,20 +135,27 @@ void Sudoku::generate() {
 			}
 		}
 
-		if (row > -1 && col > -1) {
+		if (row > -1 && col > -1) { // break if row is valid
 			break;
 		}
 	}
 
+
+
 	// if chosen cell is not occupied, go to next step, otherwise loop
 	if (board[row][col]->status != true) {
 
-		// choose a number from the list in order until 1 or none satisfy
+		// choose a number from the list in order until 1 satisfies. If none satisfy, an unsolvable solution has been encountered.
 		for (int i = 0; i < grid; i++) {
 
 			if (validate(row, col, i+1) == true) {
 				entry = i+1;
 				valid = true;
+				break;
+			}
+
+			if (valid == false && i == 8) { // this cell will never be satisfied in this run. Need to return to earlier state
+				failed = true;
 				break;
 			}
 		}
@@ -145,11 +164,30 @@ void Sudoku::generate() {
 		//if entry is valid, write entry to cell coordinates.
 		if (valid) {
 
-			cout << "adding new entry: " << entry << " at " << row << "," << col << endl;
+			cout << "adding new entry: " << entry << " at " << row << "," << col << "; " << endl;
 
 			board[row][col]->value = entry;
 			board[row][col]->status = true;
+			chosen_list.push_back(board[row][col]->cell_number); // store cell ID to list of filled cells
 			inserted_items++;
+		}
+
+		if (failed == true) {
+			
+			// output board and inserted count to text file
+			
+			
+			// re-init board here.
+			// print an indication
+			cout << "saving sate to output file." << endl;
+			printDebug(file);
+
+			cout << "returning to initial state" << endl;
+
+			destroyBoard();
+			initialize();
+			inserted_items = 0;
+
 		}
 
 		
@@ -161,11 +199,125 @@ void Sudoku::generate() {
 	row = -1;
 	col = -1;
 	entry = -1;
+	valid = false;
+	failed = false;
+	//already_chosen = false;
 
 	/*while (inserted_items < MAX) {
 		
 	}*/
 
+}
+
+
+
+void Sudoku::generate2() {
+
+	bool existing = false;
+	bool valid = false;
+	bool failed = false;
+	int entry = -1;
+	//bool already_chosen = false;
+
+	random_device rd;
+	mt19937 gen(rd());
+	uniform_int_distribution<> dis(1, 9); // inclusive
+
+	// !!!(parent loop)!!! loop until inserted_items == 81 // remember to modify inserted items when debugging with existing values.
+
+	// do not proceed until a cell that have never been filled is chosen.
+
+	int random_number = dis(gen);
+
+
+	// get coordinates of the random choice via cell its ID
+	for (int row = 0; row < grid; row++) {
+		for (int col = 0; col < grid; col++) {
+
+
+			// if chosen cell is not occupied, go to next step, otherwise loop
+			if (board[row][col]->status != true) {
+
+				// choose a number from the list in order until 1 satisfies. If none satisfy, an unsolvable solution has been encountered.
+				for (int i = 0; i < grid; i++) {
+
+					if (validate(row, col, i + 1) == true) {
+						entry = i + 1;
+						valid = true;
+						break;
+					}
+
+					if (valid == false && i == 8) { // this cell will never be satisfied in this run. Need to return to earlier state
+						failed = true;
+						break;
+					}
+				}
+
+
+				//if entry is valid, write entry to cell coordinates.
+				if (valid) {
+
+					cout << "adding new entry: " << entry << " at " << row << "," << col << "; " << endl;
+
+					board[row][col]->value = entry;
+					board[row][col]->status = true;
+					chosen_list.push_back(board[row][col]->cell_number); // store cell ID to list of filled cells
+					inserted_items++;
+				}
+
+				if (failed == true) { // remove last item and try again?
+
+					// output board and inserted count to text file
+
+
+					// re-init board here.
+					// print an indication
+					cout << "saving sate to output file." << endl;
+					printDebug(file);
+
+					cout << "returning to initial state" << endl;
+
+					destroyBoard();
+					initialize();
+					inserted_items = 0;
+
+				}
+
+
+			}
+
+			// reset
+			existing = false;
+			entry = -1;
+			valid = false;
+			failed = false;
+			printBoard();
+		}
+	}
+
+
+
+	
+	//already_chosen = false;
+
+	/*while (inserted_items < MAX) {
+
+	}*/
+
+}
+
+
+
+
+void Sudoku::destroyBoard() {
+	cout << "Destroying board..." << endl;
+	for (int i = 0; i < grid; i++) {
+		for (int j = 0; j < grid; j++) {
+			cell* temp = board[i][j];
+			delete temp;
+			temp = NULL;
+		}
+	}
 }
 
 
@@ -231,6 +383,32 @@ void Sudoku::printBoard() {
 			cout << "---------------------" << endl;
 		}
 	}*/
+}
+
+
+void Sudoku::printDebug(ofstream& ofile) {
+	ofile << endl;
+
+	ofile << "state with no solution." << endl;
+
+	for (int i = 0; i < grid; i++) {
+		for (int j = 0; j < grid; j++) {
+			ofile << board[i][j]->value << " ";
+
+			if ((j + 1) % 9 == 0) { // if the current col iteration is divisible by 9, end line
+				ofile << endl;
+			}
+			else if ((j + 1) % 3 == 0) { // if the current col iteration is not divisible by 9 but 3, add a bar
+				ofile << "| ";
+			}
+		}
+
+		if ((i + 1) % 3 == 0) { // if the current row iteration is divisible by 3, display a divider
+			ofile << "---------------------" << endl;
+		}
+	}
+
+	ofile << "items inserted out of 81: " << inserted_items << endl;
 }
 
 bool Sudoku::subset_validate(int row, int col, int entry) {

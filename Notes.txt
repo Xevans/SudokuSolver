@@ -162,3 +162,66 @@ Attempted to loop until 81 cells were filled.
 Program ran into an indefinite loop when an unsolvable board was encountered.
 
 Task: modify algorithm to remove entries when board is unsolvable. Must first determine when a board is unsolvable.
+
+August 20
+
+Idea: save the state of the board into a list and return to an earlier state when an unsolvable board is encountered.
+
+Questions: 
+
+- How will the program know the board is unsolvable?
+- Which state should the program return to (how far back?)
+	- delete all states saved after that state when loaded?
+- What is the process of loading and unloading a state?
+	- saved state is just an array of 81 integers.
+	- every permutation, loop the matrix and and save the entries into a new array pushed back into a vector
+	- when loading just write every value from the array into the matrix in order. (if 0, mark unoccupied.)
+
+August 21
+
+Answers:
+Hint that the board is unsolvable:
+	- tried all possible entries in a cell but couldn't add anything. Unsolvable solution encountered.
+
+What state to return to?
+	- this one is tricky
+	- on one hand you could return to the first state each time.
+	- on the other, you could return to an arbitrary state but this could cause complications.
+	- test with restarting the board each time first
+
+
+August 22
+
+Want to se how long the program would need to run to return a solution with current approach.
+Will run for 10 min then 30 min.
+
+Before testing, modify the condition to return to initial state.
+	- Print the unsolvable board to an output file with inserted items count before calling destroy and initialize.
+
+
+August 23
+
+We generated a valid sudoku board!!!
+
+
+Why my approach is not efficient:
+There is not enough 'direction' for my insertion algorithm.
+I want to be on a path toward a solution. My current approach does not support this.
+
+What to do:
+Make a sudoku solver first.
+
+How:
+initialize a board that is valid and complete.
+Remove random cells (like 29 to 50).
+Insert a value at an empty cell. 
+	if the board is still valid, continue to the next cell
+	if not, remove the last cell and try another cell.
+
+How does this help make a sudoku generatior?
+The way we want to generate a board from an empty state is to attempt to solve the board after each entry (see if 1 or more solutions exist).
+if the board is unsolvable after an entry (no solutions exist), we know we need to remove a value and try another random cell.
+
+
+
+

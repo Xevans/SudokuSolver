@@ -1,5 +1,4 @@
 #include <iostream>
-#include <ctime>
 //#include <vector>
 //#include "SudokuSolver.h"
 
@@ -13,17 +12,38 @@ int main() {
 	//bool test_validate = game.validate();
 	//cout << "Status of validate: " << test_validate << endl;
 
-	game.generate();
-	game.printBoard();
+	//game.generate();
+	//game.printBoard();
 
-	/*for (int i = 0; i < 80; i++) {
+	int current_total = game.inserted_items;
+	int last_total = current_total;
+
+	
+
+
+	// test drivers
+
+	/*for (int i = 0; i < 20; i++) {
 		game.generate();
-		game.printBoard();
+		current_total = game.inserted_items;
+
+		if (current_total != last_total) {
+			game.printBoard();
+		}
+
+		last_total = current_total;
+
 	}*/
 
 	while (game.inserted_items != MAX) {
 		game.generate();
-		game.printBoard();
+		current_total = game.inserted_items;
+
+		if (current_total != last_total) {
+			game.printBoard();
+		}
+
+		last_total = current_total;
 	}
 
 	//game.board[8][7]->value = 1;
